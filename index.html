@@ -51,10 +51,13 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="categoriaId">Categoría</label>
-                            <select class="form-select" id="categoriaId" required disabled>
-                                <option value="" selected>Cargando categorías...</option>
-                            </select>
+                            <label class="form-label">Nombre de Categoría</label>
+                            <input type="text" class="form-control" id="categoriaNombre" required placeholder="Ej: Hamburguesas">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción de Categoría</label>
+                            <input type="text" class="form-control" id="categoriaDescripcion" required placeholder="Ej: Productos de hamburguesas">
                         </div>
 
                         <div class="mb-3">
@@ -76,44 +79,6 @@
 
     <script>
         const BACKEND_URL = 'https://backend-gupal-alastapas.onrender.com/api/registrarproducto';
-        const CATEGORIAS_URL = 'https://backend-gupal-alastapas.onrender.com/api/categorias';
-
-        async function cargarCategorias() {
-            const categoriaSelect = document.getElementById("categoriaId");
-
-            try {
-                const respuesta = await fetch(CATEGORIAS_URL);
-
-                if (!respuesta.ok) {
-                    throw new Error("No se pudieron cargar las categorías");
-                }
-
-                const resultado = await respuesta.json();
-                const categorias = Array.isArray(resultado)
-                    ? resultado
-                    : resultado.categorias || resultado.data || [];
-
-                categoriaSelect.innerHTML = '<option value="" selected disabled>Seleccione una categoría</option>';
-
-                categorias.forEach((categoria) => {
-                    const opcion = document.createElement("option");
-                    opcion.value = categoria.id || categoria.uid || categoria.categoria_id;
-                    opcion.textContent = categoria.nombre || categoria.name || categoria.descripcion;
-                    categoriaSelect.appendChild(opcion);
-                });
-
-                categoriaSelect.disabled = categorias.length === 0;
-
-                if (categorias.length === 0) {
-                    categoriaSelect.innerHTML = '<option value="" selected disabled>No hay categorías disponibles</option>';
-                }
-            } catch (error) {
-                console.error(error);
-                categoriaSelect.innerHTML = '<option value="" selected disabled>Error al cargar categorías</option>';
-            }
-        }
-
-        cargarCategorias();
 
         document.getElementById("imagen").addEventListener("change", (e) => {
             const file = e.target.files[0];
@@ -142,7 +107,10 @@
 
             formData.append("stock", document.getElementById("stock").value);
 
-            formData.append("categoria_id", document.getElementById("categoriaId").value.trim());
+            formData.append("categoria", JSON.stringify({
+                nombre: document.getElementById("categoriaNombre").value.trim(),
+                descripcion: document.getElementById("categoriaDescripcion").value.trim()
+            }));
 
             const imagenInput = document.getElementById('imagen');
 
