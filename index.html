@@ -51,8 +51,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">ID de Categoría</label>
-                            <input type="text" class="form-control" id="categoriaId" required placeholder="Ej: categoria123">
+                            <label class="form-label" for="categoriaId">Categoría</label>
+                            <select class="form-select" id="categoriaId" required>
+                                <option value="" selected disabled>Seleccione una categoría</option>
+                                <option value="electronica">Electrónica</option>
+                                <option value="ropa">Ropa</option>
+                                <option value="hogar">Hogar</option>
+                                <option value="alimentos">Alimentos</option>
+                            </select>
                         </div>
 
                         <div class="mb-3">
