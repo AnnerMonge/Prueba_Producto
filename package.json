@@ -1,0 +1,25 @@
+{
+  "name": "prueba_producto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnnerMonge/Prueba_Producto.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AnnerMonge/Prueba_Producto/issues"
+  },
+  "homepage": "https://github.com/AnnerMonge/Prueba_Producto#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
+    "firebase": "^12.18.0"
+  }
+}
