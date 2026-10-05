@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,14 +11,23 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
         }
-        .card {
+
+        .form-card,
+        .producto-card {
             border: none;
             border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
+
+        .form-card {
+            position: sticky;
+            top: 1.5rem;
+        }
+
         #resultado {
             display: none;
         }
+
         #preview {
             max-width: 100%;
             max-height: 200px;
@@ -25,29 +35,38 @@
             border-radius: 8px;
             display: none;
         }
+
         .producto-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
         .producto-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
+
         .producto-img {
-            height: 180px;
+            height: 175px;
             object-fit: cover;
-            border-top-left-radius: 1rem;
-            border-top-right-radius: 1rem;
         }
+
         #listaProductos {
             min-height: 120px;
         }
+
+        @media (max-width: 991.98px) {
+            .form-card {
+                position: static;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="container py-5">
+    <div class="container-fluid px-3 px-lg-4 py-4 py-lg-5">
         <div class="row g-4">
-            <div class="col-lg-5">
-                <div class="card p-4">
+            <div class="col-12 col-lg-4">
+                <div class="card form-card p-4">
                     <h2 class="text-center mb-4">Registro de Producto</h2>
 
                     <form id="formProducto">
@@ -58,22 +77,26 @@
 
                         <div class="mb-3">
                             <label class="form-label">Precio (S/.)</label>
-                            <input type="number" class="form-control" id="precio" required min="0" step="0.01" placeholder="Ej: 45.50">
+                            <input type="number" class="form-control" id="precio" required min="0" step="0.01"
+                                placeholder="Ej: 45.50">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Stock (cantidad)</label>
-                            <input type="number" class="form-control" id="stock" required min="0" step="1" placeholder="Ej: 20">
+                            <input type="number" class="form-control" id="stock" required min="0" step="1"
+                                placeholder="Ej: 20">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Nombre de Categoría</label>
-                            <input type="text" class="form-control" id="categoriaNombre" required placeholder="Ej: Hamburguesas">
+                            <input type="text" class="form-control" id="categoriaNombre" required
+                                placeholder="Ej: Hamburguesas">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Descripción de Categoría</label>
-                            <input type="text" class="form-control" id="categoriaDescripcion" required placeholder="Ej: Productos de hamburguesas">
+                            <input type="text" class="form-control" id="categoriaDescripcion" required
+                                placeholder="Ej: Productos de hamburguesas">
                         </div>
 
                         <div class="mb-3">
@@ -91,154 +114,214 @@
                 </div>
             </div>
 
-            <div class="col-lg-7">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="col-12 col-lg-8">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
                     <h2 class="mb-0">Productos registrados</h2>
-                    <button class="btn btn-outline-secondary btn-sm" id="btnRecargar" type="button">
-                        Actualizar
-                    </button>
+
+                    <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0" style="max-width: 480px;">
+                        <input type="search" class="form-control form-control-sm" id="inputBusqueda"
+                            placeholder="Buscar por nombre, categoría, precio o stock..."
+                            aria-label="Buscar productos">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnRecargar"
+                            title="Actualizar productos">
+                            Actualizar
+                        </button>
+                    </div>
                 </div>
-                <div id="listaProductos" class="row g-3">
-                    <div class="col-12 text-center text-muted">Cargando productos...</div>
-                </div>
+
+                <div id="listaProductos" class="row g-3" aria-live="polite"></div>
             </div>
-        </div>
-    </div>
 
-    <script>
-        const BACKEND_URL = 'https://backend-gupal-alastapas.onrender.com/api';
 
-        document.getElementById("imagen").addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            const preview = document.getElementById("preview");
+            <script>
+                const BACKEND_URL = 'https://backend-gupal-alastapas.onrender.com/api';
 
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = "block";
-            } else {
-                preview.src = "";
-                preview.style.display = "none";
-            }
-        });
+                document.getElementById("imagen").addEventListener("change", (e) => {
+                    const file = e.target.files[0];
+                    const preview = document.getElementById("preview");
 
-        document.getElementById("formProducto").addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const resultadoDiv = document.getElementById("resultado");
-            resultadoDiv.style.display = "none";
-
-            const formData = new FormData();
-
-            formData.append("nombre", document.getElementById("nombre").value.trim());
-
-            formData.append("precio", document.getElementById("precio").value);
-
-            formData.append("stock", document.getElementById("stock").value);
-
-            formData.append("categoria", JSON.stringify({
-                nombre: document.getElementById("categoriaNombre").value.trim(),
-                descripcion: document.getElementById("categoriaDescripcion").value.trim()
-            }));
-
-            const imagenInput = document.getElementById('imagen');
-
-            if (imagenInput.files.length > 0) {
-                formData.append('image', imagenInput.files[0]);
-            }
-
-            try {
-                const respuesta = await fetch(`${BACKEND_URL}/registrarproducto`, {
-                    method: "POST",
-                    body: formData
+                    if (file) {
+                        preview.src = URL.createObjectURL(file);
+                        preview.style.display = "block";
+                    } else {
+                        preview.src = "";
+                        preview.style.display = "none";
+                    }
                 });
 
-                const data = await respuesta.json();
+                document.getElementById("formProducto").addEventListener('submit', async (e) => {
+                    e.preventDefault();
 
-                if (respuesta.ok) {
-                    resultadoDiv.className = "alert alert-success mt-4";
+                    const resultadoDiv = document.getElementById("resultado");
+                    resultadoDiv.style.display = "none";
 
-                    resultadoDiv.innerHTML = 
-                        data.mensaje + 
-                        (
-                            data.producto && data.producto.image
-                            ? `<br><img src="${data.producto.image}" style="max-width:100%;margin-top:10px;border-radius:8px;">`
-                            : ""
-                        );
-                    
-                    document.getElementById("formProducto").reset();
-                    document.getElementById("preview").style.display = "none";
-                } else {
-                    resultadoDiv.className = "alert alert-danger mt-4";
-                    resultadoDiv.textContent = data.mensaje || "Error al registrar el producto";
+                    const formData = new FormData();
+
+                    formData.append("nombre", document.getElementById("nombre").value.trim());
+
+                    formData.append("precio", document.getElementById("precio").value);
+
+                    formData.append("stock", document.getElementById("stock").value);
+
+                    formData.append("categoria", JSON.stringify({
+                        nombre: document.getElementById("categoriaNombre").value.trim(),
+                        descripcion: document.getElementById("categoriaDescripcion").value.trim()
+                    }));
+
+                    const imagenInput = document.getElementById('imagen');
+
+                    if (imagenInput.files.length > 0) {
+                        formData.append('image', imagenInput.files[0]);
+                    }
+
+                     // ========= Cargar y mostrar productos =========
+                async function cargarProductos() {
+                    const contenedor = document.getElementById("listaProductos");
+                    contenedor.innerHTML = '<div class="col-12 loading">Cargando productos...</div>';
+
+
+                    try {
+                        const respuesta = await fetch(`${BACKEND_URL}/registrarproducto`, {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        const data = await respuesta.json();
+
+                        if (respuesta.ok) {
+                            resultadoDiv.className = "alert alert-success mt-4";
+
+                            resultadoDiv.innerHTML =
+                                data.mensaje +
+                                (
+                                    data.producto && data.producto.image
+                                        ? `<br><img src="${data.producto.image}" style="max-width:100%;margin-top:10px;border-radius:8px;">`
+                                        : ""
+                                );
+
+                            document.getElementById("formProducto").reset();
+                            document.getElementById("preview").style.display = "none";
+                        } else {
+                            resultadoDiv.className = "alert alert-danger mt-4";
+                            resultadoDiv.textContent = data.mensaje || "Error al registrar el producto";
+                        }
+
+                        resultadoDiv.style.display = 'block';
+                        cargarProductos();
+
+                    } catch (error) {
+                        console.error(error);
+
+                        resultadoDiv.className = "alert alert-danger mt-4";
+                        resultadoDiv.textContent = "Error de conexión con el servidor.";
+
+                        resultadoDiv.style.display = "block";
+                    }
+                }
+                });
+
+                function escaparHtml(valor) {
+                    return String(valor ?? '')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .replaceAll("'", '&#039;');
+                }
+                let productosRegistrados = [];
+
+                function normalizarTexto(valor) {
+                    return String(valor ?? '')
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .toLocaleLowerCase('es');
                 }
 
-                resultadoDiv.style.display = 'block';
-                cargarProductos();
+                function mostrarProductos(termino = '') {
+                    const contenedor = document.getElementById('listaProductos');
+                    const consulta = normalizarTexto(termino);
+                    const productosFiltrados = productosRegistrados.filter((producto) => {
+                        const categoria = producto.categoria_id || {};
+                        const textoProducto = [
+                            producto.nombre,
+                            producto.precio,
+                            producto.stock,
+                            categoria.nombre,
+                            categoria.descripcion
+                        ].map(normalizarTexto).join(' ');
 
-            } catch (error) {
-                console.error(error);
+                        return textoProducto.includes(consulta);
+                    });
 
-                resultadoDiv.className = "alert alert-danger mt-4";
-                resultadoDiv.textContent = "Error de conexión con el servidor.";
-
-                resultadoDiv.style.display = "block";
-            }
-        });
-
-        function escaparHtml(valor) {
-            return String(valor ?? '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-        }
-
-        async function cargarProductos() {
-            const contenedor = document.getElementById('listaProductos');
-            contenedor.innerHTML = '<div class="col-12 text-center text-muted">Cargando productos...</div>';
-
-            try {
-                const respuesta = await fetch(`${BACKEND_URL}/producto`);
-                const productos = await respuesta.json();
-
-                if (!respuesta.ok) {
-                    throw new Error(productos.mensaje || 'No se pudieron obtener los productos');
-                }
-
-                if (productos.length === 0) {
-                    contenedor.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">Aún no hay productos registrados.</div></div>';
-                    return;
-                }
-
-                contenedor.innerHTML = productos.map((producto) => {
-                    const categoria = producto.categoria_id || {};
-                    const imagen = producto.image || 'https://via.placeholder.com/600x400?text=Producto';
-
-                    return `
-                        <div class="col-md-6">
-                            <div class="card producto-card h-100 overflow-hidden">
-                                <img src="${escaparHtml(imagen)}" class="card-img-top producto-img" alt="${escaparHtml(producto.nombre)}">
-                                <div class="card-body">
-                                    <h5 class="card-title">${escaparHtml(producto.nombre)}</h5>
-                                    <p class="card-text mb-1"><strong>Precio:</strong> S/. ${escaparHtml(producto.precio)}</p>
-                                    <p class="card-text mb-1"><strong>Stock:</strong> ${escaparHtml(producto.stock)}</p>
-                                    <p class="card-text text-muted mb-0"><strong>Categoría:</strong> ${escaparHtml(categoria.nombre)}</p>
+                    if (productosFiltrados.length === 0) {
+                        contenedor.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-info text-center">
+                                    ${consulta
+                                        ? 'No se encontraron productos que coincidan con la búsqueda.'
+                                        : 'Aún no hay productos registrados.'}
                                 </div>
-                            </div>
-                        </div>`;
-                }).join('');
-            } catch (error) {
-                console.error(error);
-                contenedor.innerHTML = `
-                    <div class="col-12">
-                        <div class="alert alert-danger text-center">Error al cargar los productos. Intenta nuevamente.</div>
-                    </div>`;
-            }
-        }
+                            </div>`;
+                        return;
+                    }
 
-        document.getElementById('btnRecargar').addEventListener('click', cargarProductos);
-        cargarProductos();
-    </script>
+                    contenedor.innerHTML = productosFiltrados.map((producto) => {
+                        const categoria = producto.categoria_id || {};
+                        const imagen = producto.image || 'https://via.placeholder.com/600x400?text=Producto';
+
+                        return `
+                            <div class="col-12 col-sm-6 col-xl-4">
+                                <div class="card producto-card h-100 overflow-hidden">
+                                    <img src="${escaparHtml(imagen)}" class="card-img-top producto-img" alt="${escaparHtml(producto.nombre)}">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title mb-2">${escaparHtml(producto.nombre)}</h5>
+                                        <p class="card-text mb-1 text-muted">
+                                            ${escaparHtml(categoria.nombre || 'Sin categoría')}
+                                        </p>
+                                        <p class="card-text mb-1">
+                                            <small class="text-muted">Precio: S/. ${escaparHtml(producto.precio)} · Stock: ${escaparHtml(producto.stock)}</small>
+                                        </p>
+                                        ${categoria.descripcion
+                                            ? `<p class="card-text mt-auto mb-0"><small class="text-muted">${escaparHtml(categoria.descripcion)}</small></p>`
+                                            : ''}
+                                    </div>
+                                </div>
+                            </div>`;
+                    }).join('');
+                }
+
+                async function cargarProductos() {
+                    const contenedor = document.getElementById('listaProductos');
+                    contenedor.innerHTML = '<div class="col-12 text-center text-muted">Cargando productos...</div>';
+
+                    try {
+                        const respuesta = await fetch(`${BACKEND_URL}/producto`);
+                        const productos = await respuesta.json();
+
+                        if (!respuesta.ok) {
+                            throw new Error(productos.mensaje || 'No se pudieron obtener los productos');
+                        }
+                        if (!Array.isArray(productos)) {
+                            throw new Error('La respuesta del servidor no contiene una lista de productos');
+                        }
+
+                        productosRegistrados = productos;
+                        mostrarProductos(document.getElementById('inputBusqueda').value);
+                    } catch (error) {
+                        console.error(error);
+                        contenedor.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-danger text-center">Error al cargar los productos. Intenta nuevamente.</div>
+                            </div>`;
+                    }
+                }
+
+                document.getElementById('inputBusqueda').addEventListener('input', (evento) => {
+                    mostrarProductos(evento.target.value);
+                });
+                document.getElementById('btnRecargar').addEventListener('click', cargarProductos);
+                cargarProductos();
+            </script>
 </body>
+
 </html>
